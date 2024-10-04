@@ -1,0 +1,90 @@
+.codeui {
+    display: flex;
+    background-color: #9E9E9E;
+    padding: 10px;
+    border-radius: 10px;
+    gap: 8px;
+    margin: 25px;
+    height: 50vh;
+}
+
+.tabbedui {
+    display: flex;
+    flex-grow: 1;
+    flex-direction: column;
+}
+
+.tabs {
+    display: flex;
+    gap: 4px;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.tabs [role="tab"] {
+    font: 400 16px/22px 'Roboto';
+    padding: 8px 8px;
+    margin: 0;
+    text-align: center;
+    width: 100px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    cursor: pointer;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    background: linear-gradient(#fafafa, #eee);
+    border: none;
+}
+
+.tabs [role="tab"][aria-selected="true"] {
+    font-weight: 600;
+    background: white;
+    box-shadow: none;
+    padding-top: 4px;
+    border-top: 4px solid #666;
+}
+
+.tabcontent {
+    background-color: white;
+    overflow: scroll;
+    flex-grow: 1;
+}
+
+.tabcontent [role="tabpanel"] {
+    display: none;
+}
+
+.tabcontent [aria-selected="true"][role="tabpanel"] {
+    display: block;
+    white-space: pre;
+}
+
+.codeui .frame {
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+}
+
+.codeui .frame .iframe {
+    background-color: white;
+    flex-grow: 1;
+}
+
+.codeui .frame iframe {
+    border: 0px;
+    background-color: antiquewhite;
+    height: 100%;
+}
+
+.codeui .frame button {
+    width: 100%;
+    background-color: #1E88E5;
+    border: 1px outset white;
+    color: white;
+    padding: 4px;
+}
+
+.codeui .frame button:active {
+    border: 1px inset white;
+}
