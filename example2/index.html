@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Styled Button</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="mybutton.js"></script>
+        <style>
+            body {
+                background-color: antiquewhite;
+            }
+            
+            .container {
+                background-color: white;
+            }
+            
+            .thicc {
+                background-color: #1E88E5;
+                border: 3px outset #1E88E5;
+                color: white;
+                margin: 25px;
+                padding: 25px;
+                font-size: 14pt;
+            }
+
+            .thicc:active {
+                border: 3px inset #1E88E5;
+                padding: 24px 26px 26px 24px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <my-button text="Click me!"></my-button>
+        </div>
+    </body>
+</html>
