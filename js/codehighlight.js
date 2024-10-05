@@ -10,6 +10,8 @@ class CodeHighlight extends HTMLElement
     static TYPE_COMMENT_MULTI = 5;
     static TYPE_CSS_SELECTOR = 6;
     static TYPE_CSS_IDENTIFIER = 7;
+    static TYPE_TAG = 8;
+    static TYPE_ATTRIBUTE = 9;
     
     static keywords = ["for", "if", "while", "else", "function", "break", "continue", "return", "var", "let", "const", "this", "get", "set", "class", "extends", "static"];
     static global = ["$", "console", "window"];
@@ -22,6 +24,8 @@ class CodeHighlight extends HTMLElement
     #inner = false;
     #value = false;
     #media = false;
+    #tag = false;
+    #attribute = false;
 
     constructor() 
     {
@@ -31,6 +35,55 @@ class CodeHighlight extends HTMLElement
     attributeChangedCallback(name, oldValue, newValue)
     {
         if(name === "type") this.#type = newValue.toLowerCase();
+    }
+    
+    #colorizeHTML(tokens)
+    {
+        tokens.forEach(function(line, index) {
+            line.forEach(function(token) {
+                if(token.type === CodeHighlight.TYPE_TAG) 
+                {
+                    token.style = "tag";
+                }
+                
+                if(token.type === CodeHighlight.TYPE_ATTRIBUTE) 
+                {
+                    token.style = "attribute";
+                }
+                
+                if(token.type === CodeHighlight.TYPE_STRING) 
+                {
+                    token.style = "string";
+                }
+                
+                if(token.type === CodeHighlight.TYPE_COMMENT_MULTI)
+                {
+                    token.style = "comment";
+                }
+                
+                if(token.type === CodeHighlight.TYPE_CSS_SELECTOR)
+                {
+                    token.style = "selector";
+                }
+                
+                if(token.type === CodeHighlight.TYPE_CSS_IDENTIFIER)
+                {
+                    token.style = "identifier";
+                }
+                
+                if(CodeHighlight.TYPE_CSS_SELECTOR && token.text.startsWith('@'))
+                {
+                    token.style = "function";
+                }
+                
+                if(CodeHighlight.TYPE_CSS_SELECTOR && (token.text === "screen" || token.text === "print"))
+                {
+                    token.style = "media";
+                }
+            });
+        });
+        
+        return tokens;
     }
     
     #colorizeCSS(tokens)
@@ -118,6 +171,92 @@ class CodeHighlight extends HTMLElement
                 }
             });
         });
+        
+        return tokens;
+    }
+    
+    #parseLineHTML(line)
+    {
+        let tokens = [];
+        let working = "";
+        let mode = CodeHighlight.TYPE_SPACE;
+        
+        let type;
+        let open;
+        let c;
+        
+        for(let i=0; i<line.length; i++)
+        {
+            c = line.charAt(i);
+            
+            if(mode === CodeHighlight.TYPE_STRING)
+            {
+                if(c === '\\')
+                {
+                    working += c + line.charAt(++i);
+                    continue;
+                }
+                
+                if(c === open)
+                {
+                    tokens.push({text: (working + c), type: mode});
+                    
+                    working = "";
+                    mode = CodeHighlight.TYPE_SPACE;
+                    continue;
+                }
+                
+                working += c;
+                continue;
+            }
+            
+            if(mode === CodeHighlight.TYPE_COMMENT_SINGLE)
+            {   
+                working += c;
+                continue;
+            }
+            
+            if(c === '<') this.#tag = true;
+            if(c === '>') this.#tag = this.#attribute = false;
+            if(" \t".indexOf(c) >=0 && this.#tag) this.#attribute = true;
+            
+            if(" \t".indexOf(c) >= 0) type = CodeHighlight.TYPE_SPACE;
+            else if(c === '<') type = CodeHighlight.TYPE_TAG;
+            else if(c === '>') type = CodeHighlight.TYPE_TAG;
+            else if(this.#attribute && "\"'".indexOf(c) >= 0) type = CodeHighlight.TYPE_STRING;
+            else if(this.#attribute && "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_=-".indexOf(c) >= 0) type = CodeHighlight.TYPE_ATTRIBUTE;
+            else if(this.#tag && "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_!/-".indexOf(c) >= 0) type = CodeHighlight.TYPE_TAG;
+            else if(!this.#tag) type = CodeHighlight.TYPE_WORD;
+//            else if("/".indexOf(c) >= 0 && line.charAt(i+1) === '/') type = CodeHighlight.TYPE_COMMENT_SINGLE;
+//            else if("/".indexOf(c) >= 0 && line.charAt(i+1) === '*') type = CodeHighlight.TYPE_COMMENT_MULTI;
+            else throw new Error("Unrecognized character [" + c + "]");
+            
+            if(type === mode)
+            {
+                working += c;
+                continue;
+            }
+            
+            if(working)
+            {
+                tokens.push({text: working, type: mode});
+
+                working = "";
+            }
+            
+            if(type === CodeHighlight.TYPE_STRING)
+            {
+                open = c;
+            }
+            
+            working = c;
+            mode = type;
+        }
+         
+        if(working)
+        {
+            tokens.push({text: working, type: mode});
+        }
         
         return tokens;
     }
@@ -290,6 +429,22 @@ class CodeHighlight extends HTMLElement
         return tokens;
     }
     
+    #parseTokensHTML(code)
+    {
+        let tokens = [];
+        let lines = code.split('\n');
+        let line;
+
+        for(let i=0; i<lines.length; i++)
+        {
+            line = this.#parseLineHTML(lines[i]);
+            
+            tokens.push(line);
+        }
+
+        return tokens;
+    }
+    
     #parseTokensCSS(code)
     {
         let tokens = [];
@@ -427,6 +582,13 @@ class CodeHighlight extends HTMLElement
         {
             this.#tokens = this.#parseTokensCSS(this.#code);
             this.#tokens = this.#colorizeCSS(this.#tokens);
+
+            this.#renderLines(code, this.#tokens, 1);
+        }
+        else if(this.#type === "html" || this.#type === "htm")
+        {
+            this.#tokens = this.#parseTokensHTML(this.#code);
+            this.#tokens = this.#colorizeHTML(this.#tokens);
 
             this.#renderLines(code, this.#tokens, 1);
         }

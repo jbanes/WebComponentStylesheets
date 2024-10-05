@@ -154,6 +154,8 @@ code.codeblock .string { color: rgb(30, 147, 71); }
 code.codeblock .selector { color: rgb(30, 147, 71); }
 code.codeblock .identifier { color: rgb(51, 107, 221); }
 code.codeblock .media { font-style: italic; }
+code.codeblock .tag { color: rgb(51, 107, 221); }
+code.codeblock .attribute { color: rgb(206, 84, 184); }
 code.codeblock .highlight { background-color: #f4b759; }
 
 
