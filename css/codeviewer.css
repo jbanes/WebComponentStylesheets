@@ -3,7 +3,7 @@
     background-color: #9E9E9E;
     padding: 6px;
     padding-top: 8px;
-    border: 3px solid black;
+    border: 3px solid #888;
     border-radius: 10px;
     gap: 8px;
     height: max(50vh, 250px);
@@ -112,23 +112,53 @@
 }
 
 
-code { white-space: pre-wrap; font-family: SF Mono, monospace; text-rendering: optimizeSpeed; }
-code span { margin: 0; padding: 0; }
-code.codeblock { white-space: pre; font-size: 10pt; display: grid; grid-template-columns: auto 1fr; gap: 0px 8px; }
-code.codeblock .halfheight { height: 0.5lh; font-size: inherit !important; }
-code.codeblock .linenumbers { background-color: #e9e8e3; text-align: right; padding: 0px 5px 0px 8px; border-left: solid 1px #c2c2c2; border-right: solid 1px #d6d5d2; font-size: 90%; user-select: none; -webkit-user-select: none; }
-code.codeblock .spacer { display: inline-block; width: 8px; }
-code.codeblock .block { background-color: #fbfaf6; padding: 5px 5px; }
+code { 
+    font-family: monospace; 
+    white-space: pre;
+}
+
+code.codeblock { 
+    display: grid; 
+    font-size: 10pt; 
+    gap: 0px 8px; 
+    grid-template-columns: auto 1fr; 
+    white-space: pre; 
+}
+
+code.codeblock .halfheight { 
+    font-size: inherit !important; 
+    height: 0.5lh; 
+}
+
+code.codeblock .linenumbers { 
+    background-color: #e9e8e3; 
+    border-left: solid 1px #c2c2c2; 
+    border-right: solid 1px #d6d5d2; 
+    font-size: 90%; 
+    padding: 0px 5px 0px 8px; 
+    text-align: right; 
+    user-select: none; 
+    -webkit-user-select: none; 
+}
+
+code.codeblock .code { 
+    font-size: 10pt; 
+}
+
 code.codeblock .comment { color: rgb(150, 150, 150); }
 code.codeblock .field { color: rgb(206, 84, 184); }
 code.codeblock .function { font-weight: bold; }
 code.codeblock .global { color: rgb(159, 13, 121); }
 code.codeblock .keyword { color: rgb(51, 107, 221); }
 code.codeblock .string { color: rgb(30, 147, 71); }
+code.codeblock .selector { color: rgb(30, 147, 71); }
+code.codeblock .identifier { color: rgb(51, 107, 221); }
+code.codeblock .media { font-style: italic; }
 code.codeblock .highlight { background-color: #f4b759; }
 
 
 @media only screen and (orientation: portrait), only screen and (max-height: 600px) {
-    code.codeblock { font-size: 10px; }
-    code.codeblock .linenumbers { font-size: 10px; }
+    code.codeblock { font-size: 10px !important; }
+    code.codeblock .linenumbers { font-size: 10px !important; }
+    code.codeblock .code { font-size: 10px !important; }
 }

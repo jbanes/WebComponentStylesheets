@@ -8,6 +8,8 @@ class CodeHighlight extends HTMLElement
     static TYPE_STRING = 3;
     static TYPE_COMMENT_SINGLE = 4;
     static TYPE_COMMENT_MULTI = 5;
+    static TYPE_CSS_SELECTOR = 6;
+    static TYPE_CSS_IDENTIFIER = 7;
     
     static keywords = ["for", "if", "while", "else", "function", "break", "continue", "return", "var", "let", "const", "this", "get", "set", "class", "extends", "static"];
     static global = ["$", "console", "window"];
@@ -16,6 +18,10 @@ class CodeHighlight extends HTMLElement
     #code;
     #tokens;
     #type = "text";
+    
+    #inner = false;
+    #value = false;
+    #media = false;
 
     constructor() 
     {
@@ -25,6 +31,45 @@ class CodeHighlight extends HTMLElement
     attributeChangedCallback(name, oldValue, newValue)
     {
         if(name === "type") this.#type = newValue.toLowerCase();
+    }
+    
+    #colorizeCSS(tokens)
+    {
+        tokens.forEach(function(line, index) {
+            line.forEach(function(token) {
+                if(token.type === CodeHighlight.TYPE_STRING) 
+                {
+                    token.style = "string";
+                }
+                
+                if(token.type === CodeHighlight.TYPE_COMMENT_SINGLE)
+                {
+                    token.style = "comment";
+                }
+                
+                if(token.type === CodeHighlight.TYPE_CSS_SELECTOR)
+                {
+                    token.style = "selector";
+                }
+                
+                if(token.type === CodeHighlight.TYPE_CSS_IDENTIFIER)
+                {
+                    token.style = "identifier";
+                }
+                
+                if(token.text.startsWith('@'))
+                {
+                    token.style = "function";
+                }
+                
+                if(token.text === "screen" || token.text === "print")
+                {
+                    token.style = "media";
+                }
+            });
+        });
+        
+        return tokens;
     }
     
     #colorizeJavascript(tokens)
@@ -73,6 +118,95 @@ class CodeHighlight extends HTMLElement
                 }
             });
         });
+        
+        return tokens;
+    }
+    
+    #parseLineCSS(line)
+    {
+        let tokens = [];
+        let working = "";
+        let mode = CodeHighlight.TYPE_SPACE;
+        
+        let type;
+        let open;
+        let c;
+        
+        for(let i=0; i<line.length; i++)
+        {
+            c = line.charAt(i);
+            
+            if(mode === CodeHighlight.TYPE_STRING)
+            {
+                if(c === '\\')
+                {
+                    working += c + line.charAt(++i);
+                    continue;
+                }
+                
+                if(c === open)
+                {
+                    tokens.push({text: (working + c), type: mode});
+                    
+                    working = "";
+                    mode = CodeHighlight.TYPE_SPACE;
+                    continue;
+                }
+                
+                working += c;
+                continue;
+            }
+            
+            if(mode === CodeHighlight.TYPE_COMMENT_SINGLE)
+            {   
+                working += c;
+                continue;
+            }
+            
+            if(this.#inner && c === ':') this.#value = true;
+            if(this.#inner && c === ';') this.#value = false;
+
+            if(c === '@') this.#media = true;
+            if(c === '{' && !this.#media) this.#inner = true;
+            if(c === '}' && !this.#media) this.#inner = this.#value = false;
+            if(c === '{' && this.#media) this.#media = false;
+            if(c === '(' && this.#media) this.#inner = true;
+            if(c === ')' && this.#media) this.#inner = this.#value = false;
+            
+            if(" \t".indexOf(c) >= 0) type = CodeHighlight.TYPE_SPACE;
+            else if("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_$#-@.".indexOf(c) >= 0) type = this.#inner ? (this.#value ? CodeHighlight.TYPE_WORD : CodeHighlight.TYPE_CSS_IDENTIFIER) : (this.#media ? CodeHighlight.TYPE_WORD : CodeHighlight.TYPE_CSS_SELECTOR);
+            else if("[]{}()=+\*|!%?;,:<>&".indexOf(c) >= 0) type = CodeHighlight.TYPE_SEPARATORS;
+            else if("\"'`".indexOf(c) >= 0) type = CodeHighlight.TYPE_STRING;
+            else if("/".indexOf(c) >= 0 && line.charAt(i+1) === '/') type = CodeHighlight.TYPE_COMMENT_SINGLE;
+            else if("/".indexOf(c) >= 0 && line.charAt(i+1) === '*') type = CodeHighlight.TYPE_COMMENT_MULTI;
+            else throw new Error("Unrecognized character [" + c + "]");
+            
+            if(type === mode)
+            {
+                working += c;
+                continue;
+            }
+            
+            if(working)
+            {
+                tokens.push({text: working, type: mode});
+
+                working = "";
+            }
+            
+            if(type === CodeHighlight.TYPE_STRING)
+            {
+                open = c;
+            }
+            
+            working = c;
+            mode = type;
+        }
+         
+        if(working)
+        {
+            tokens.push({text: working, type: mode});
+        }
         
         return tokens;
     }
@@ -156,6 +290,22 @@ class CodeHighlight extends HTMLElement
         return tokens;
     }
     
+    #parseTokensCSS(code)
+    {
+        let tokens = [];
+        let lines = code.split('\n');
+        let line;
+
+        for(let i=0; i<lines.length; i++)
+        {
+            line = this.#parseLineCSS(lines[i]);
+            
+            tokens.push(line);
+        }
+
+        return tokens;
+    }
+    
     #parseTokensJavascript(code)
     {
         let tokens = [];
@@ -194,7 +344,7 @@ class CodeHighlight extends HTMLElement
         var spacer2 = document.createElement("div");
         
         spacer1.classList.add("linenumbers", "halfheight");
-        spacer2.classList.add("halfheight");
+        spacer2.classList.add("code", "halfheight");
         
         element.appendChild(spacer1);
         element.appendChild(spacer2);
@@ -210,8 +360,9 @@ class CodeHighlight extends HTMLElement
             var code = document.createElement("div");
             var span;
             
-            number.classList.add("linenumbers");
             number.textContent = index+startLine;
+            number.classList.add("linenumbers");
+            code.classList.add("code");
             
             if(!line.length || (line.length === 1 && !line[0].text))
             {
@@ -272,11 +423,17 @@ class CodeHighlight extends HTMLElement
             
             this.#renderLines(code, this.#tokens, 1);
         }
+        else if(this.#type === "css")
+        {
+            this.#tokens = this.#parseTokensCSS(this.#code);
+            this.#tokens = this.#colorizeCSS(this.#tokens);
+
+            this.#renderLines(code, this.#tokens, 1);
+        }
         else
         {
             this.#tokens = this.#parseTokensText(this.#code);
             this.#renderLines(code, this.#tokens, 1);
-//            code.textContent = this.#code;
         }
         
         this.#shadow.appendChild(code);
