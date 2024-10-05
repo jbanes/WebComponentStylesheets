@@ -26,6 +26,7 @@ class CodeHighlight extends HTMLElement
     #media = false;
     #tag = false;
     #attribute = false;
+    #style = false;
 
     constructor() 
     {
@@ -39,8 +40,20 @@ class CodeHighlight extends HTMLElement
     
     #colorizeHTML(tokens)
     {
+        var innerStyle = false;
+        
         tokens.forEach(function(line, index) {
             line.forEach(function(token) {
+                
+                var lower = token.text.toLowerCase();
+                
+                if(lower.startsWith("</style")) innerStyle = false;
+                
+                if(innerStyle)
+                {
+                    token.highlight = "innerstyle";
+                }
+                
                 if(token.type === CodeHighlight.TYPE_TAG) 
                 {
                     token.style = "tag";
@@ -80,6 +93,8 @@ class CodeHighlight extends HTMLElement
                 {
                     token.style = "media";
                 }
+                
+                if(lower.startsWith("<style")) innerStyle = true;
             });
         });
         
@@ -241,6 +256,8 @@ class CodeHighlight extends HTMLElement
             {
                 tokens.push({text: working, type: mode});
 
+                if(working.toLowerCase().startsWith("<style")) this.#style = true;
+
                 working = "";
             }
             
@@ -256,6 +273,8 @@ class CodeHighlight extends HTMLElement
         if(working)
         {
             tokens.push({text: working, type: mode});
+            
+            if(working.toLowerCase().startsWith("<style")) this.#style = true;
         }
         
         return tokens;
@@ -434,10 +453,16 @@ class CodeHighlight extends HTMLElement
         let tokens = [];
         let lines = code.split('\n');
         let line;
+        let endStyle;
 
         for(let i=0; i<lines.length; i++)
         {
-            line = this.#parseLineHTML(lines[i]);
+            endStyle = (lines[i].toLowerCase().indexOf("</style") >= 0);
+            
+            if(endStyle) this.#style = false;
+
+            if(this.#style) line = this.#parseLineCSS(lines[i]);
+            else line = this.#parseLineHTML(lines[i]);
             
             tokens.push(line);
         }
@@ -507,10 +532,13 @@ class CodeHighlight extends HTMLElement
     
     #renderLines(element, tokens, startLine)
     {
+        var lastHighight;
+        
         element.replaceChildren(); // Empty out anything already there
         this.#addSpacers(element);
         
         tokens.forEach(function(line, index) {
+            var lineHighlight = true;
             var number = document.createElement("div");
             var code = document.createElement("div");
             var span;
@@ -524,6 +552,8 @@ class CodeHighlight extends HTMLElement
                 span = document.createElement("span");
                 span.innerHTML = "&nbsp;";
                 
+                if(lastHighight) code.classList.add(lastHighight);
+                
                 code.appendChild(span);
                 element.appendChild(number);
                 element.appendChild(code);
@@ -535,13 +565,21 @@ class CodeHighlight extends HTMLElement
                 var span = document.createElement("span");
                 
                 if(token.style) span.classList.add(token.style);
+                if(token.highlight) span.classList.add(token.highlight);
+                
+                if(!token.highlight) lineHighlight = false;
+                else if(lineHighlight) lineHighlight = token.highlight;
                 
                 span.textContent = token.text;
                 code.appendChild(span);
             });
             
+            if(lineHighlight) code.classList.add(lineHighlight);
+
             element.appendChild(number);
             element.appendChild(code);
+            
+            lastHighight = lineHighlight;
         });
         
         this.#addSpacers(element);

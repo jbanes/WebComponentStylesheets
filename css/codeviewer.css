@@ -156,6 +156,7 @@ code.codeblock .identifier { color: rgb(51, 107, 221); }
 code.codeblock .media { font-style: italic; }
 code.codeblock .tag { color: rgb(51, 107, 221); }
 code.codeblock .attribute { color: rgb(206, 84, 184); }
+code.codeblock .innerstyle { background-color: rgb(227, 242, 225); }
 code.codeblock .highlight { background-color: #f4b759; }
 
 
