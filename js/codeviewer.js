@@ -3,6 +3,7 @@ class CodeViewer extends HTMLElement
     static observedAttributes = [];
 
     #shadow;
+    #style;
     #files;
 
     constructor() 
@@ -12,6 +13,7 @@ class CodeViewer extends HTMLElement
     
     #renderFiles()
     {
+        var that = this;
         var index = 1;
         var root = this.#files.getAttribute("root");
         var render = this.#files.getAttribute("render");
@@ -40,6 +42,7 @@ class CodeViewer extends HTMLElement
         tabcontent.classList.add("tabcontent");
         
         frametabs.classList.add("tabs");
+        frametabs.setAttribute("role", "tablist");
         resulttab.setAttribute("id", "result-tab");
         resulttab.setAttribute("role", "tab");
         resulttab.setAttribute("aria-controls", "result-content");
@@ -83,7 +86,13 @@ class CodeViewer extends HTMLElement
                 var response = await fetch(root + "/" + element.textContent);
                 var text = await response.text();
                 
-                content.innerText = text;
+                var highlight = document.createElement("code-highlight");
+                var code = document.createElement("code");
+                
+                code.textContent = text;
+                highlight.appendChild(that.#style.cloneNode());
+                highlight.appendChild(code);
+                content.appendChild(highlight);
             })();
             
             tab.onclick = function() {
@@ -128,6 +137,7 @@ class CodeViewer extends HTMLElement
         this.childNodes.forEach(function(element) {
             if(element.nodeName === "STYLE" || element.nodeName === "LINK")
             {
+                that.#style = element;
                 that.#shadow.appendChild(element);
             }
             

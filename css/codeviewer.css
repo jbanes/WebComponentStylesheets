@@ -10,8 +10,9 @@
 
 .tabbedui {
     display: flex;
-    flex-grow: 1;
     flex-direction: column;
+    min-width: 0;
+    min-height: 0;
 }
 
 .tabs {
@@ -58,6 +59,8 @@
 .tabcontent [aria-selected="true"][role="tabpanel"] {
     display: block;
     white-space: pre;
+    font-family: monospace;
+    padding: 6px;
 }
 
 .codeui .frame {
@@ -82,9 +85,17 @@
     background-color: #1E88E5;
     border: 1px outset white;
     color: white;
-    padding: 4px;
+    font-size: 14pt;
+    padding: 0.6em;
 }
 
 .codeui .frame button:active {
     border: 1px inset white;
+}
+
+@media only screen and (max-width: 600px) {
+  .codeui {
+      flex-direction: column;
+      height: 100vh;
+  }
 }
