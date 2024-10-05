@@ -1,16 +1,17 @@
 .codeui {
     display: flex;
     background-color: #9E9E9E;
-    padding: 10px;
+    padding: 6px;
+    border: 3px solid black;
     border-radius: 10px;
     gap: 8px;
-    margin: 25px;
-    height: 50vh;
+    height: max(50vh, 250px);
 }
 
 .tabbedui {
     display: flex;
     flex-direction: column;
+    flex-grow: 1;
     min-width: 0;
     min-height: 0;
 }
@@ -83,19 +84,23 @@
 .codeui .frame button {
     width: 100%;
     background-color: #1E88E5;
-    border: 1px outset white;
+    border: 2px outset #1E88E5;
     color: white;
     font-size: 14pt;
     padding: 0.6em;
 }
 
 .codeui .frame button:active {
-    border: 1px inset white;
+    border: 2px inset #1E88E5;
 }
 
 @media only screen and (max-width: 600px) {
   .codeui {
       flex-direction: column;
-      height: 100vh;
+      height: 60vh;
+  }
+  
+  .tabcontent [aria-selected="true"][role="tabpanel"] {
+      font-size: 80%;
   }
 }
