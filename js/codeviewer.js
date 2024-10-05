@@ -83,14 +83,17 @@ class CodeViewer extends HTMLElement
             tabcontent.appendChild(content);
             
             (async function() {
-                var response = await fetch(root + "/" + element.textContent);
+                var filename = element.textContent;
+                var response = await fetch(root + "/" + filename);
                 var text = await response.text();
                 
                 var highlight = document.createElement("code-highlight");
                 var code = document.createElement("code");
                 
                 code.textContent = text;
-                highlight.appendChild(that.#style.cloneNode());
+                highlight.setAttribute("type", filename.substring(filename.lastIndexOf('.')+1));
+                
+                highlight.appendChild(that.#style.cloneNode(true));
                 highlight.appendChild(code);
                 content.appendChild(highlight);
             })();

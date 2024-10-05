@@ -5,10 +5,12 @@ class MyButton extends HTMLElement
     constructor() 
     {
         super();
+    }
 
+    connectedCallback()
+    {
         var shadow = this.attachShadow({ mode: "open" });
         var button = document.createElement("button");
-        var mybutton = this;
 
         this.childNodes.forEach(function(element) {
             if(element.nodeName === "STYLE")
@@ -21,10 +23,6 @@ class MyButton extends HTMLElement
         button.textContent = this.attributes.item("text").nodeValue;
 
         shadow.appendChild(button);
-    }
-
-    connectedCallback()
-    {
     }
 }
 
