@@ -1,6 +1,6 @@
 class CodeHighlight extends HTMLElement 
 {
-    static observedAttributes = ["type"];
+    static observedAttributes = ["type", "start"];
     
     static TYPE_SPACE = 0;
     static TYPE_WORD = 1;
@@ -20,6 +20,7 @@ class CodeHighlight extends HTMLElement
     #code;
     #tokens;
     #type = "text";
+    #startLine = 1;
     
     #inner = false;
     #value = false;
@@ -36,6 +37,7 @@ class CodeHighlight extends HTMLElement
     attributeChangedCallback(name, oldValue, newValue)
     {
         if(name === "type") this.#type = newValue.toLowerCase();
+        if(name === "start") this.#startLine = parseInt(newValue);
     }
     
     #colorizeHTML(tokens)
@@ -589,8 +591,10 @@ class CodeHighlight extends HTMLElement
     {
         var that = this;
         var code = document.createElement("code");
+        var existing = this.#shadow.querySelector("code");
         
         if(!this.childNodes.length) return;
+        if(existing) this.#shadow.removeChild(existing);
         
         this.childNodes.forEach(function(element) {
             if(element.nodeName === "STYLE" || element.nodeName === "LINK")
@@ -614,26 +618,26 @@ class CodeHighlight extends HTMLElement
             this.#tokens = this.#parseTokensJavascript(this.#code);
             this.#tokens = this.#colorizeJavascript(this.#tokens);
             
-            this.#renderLines(code, this.#tokens, 1);
+            this.#renderLines(code, this.#tokens, this.#startLine);
         }
         else if(this.#type === "css")
         {
             this.#tokens = this.#parseTokensCSS(this.#code);
             this.#tokens = this.#colorizeCSS(this.#tokens);
 
-            this.#renderLines(code, this.#tokens, 1);
+            this.#renderLines(code, this.#tokens, this.#startLine);
         }
         else if(this.#type === "html" || this.#type === "htm")
         {
             this.#tokens = this.#parseTokensHTML(this.#code);
             this.#tokens = this.#colorizeHTML(this.#tokens);
 
-            this.#renderLines(code, this.#tokens, 1);
+            this.#renderLines(code, this.#tokens, this.#startLine);
         }
         else
         {
             this.#tokens = this.#parseTokensText(this.#code);
-            this.#renderLines(code, this.#tokens, 1);
+            this.#renderLines(code, this.#tokens, this.#startLine);
         }
         
         this.#shadow.appendChild(code);

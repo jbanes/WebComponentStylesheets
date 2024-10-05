@@ -6,7 +6,7 @@
     border: 3px solid #888;
     border-radius: 10px;
     gap: 8px;
-    height: max(50vh, 250px);
+    height: max(60vh, 250px);
 }
 
 .tabbedui {
