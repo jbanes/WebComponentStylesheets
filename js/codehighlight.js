@@ -13,7 +13,7 @@ class CodeHighlight extends HTMLElement
     static TYPE_TAG = 8;
     static TYPE_ATTRIBUTE = 9;
     
-    static keywords = ["for", "if", "while", "else", "function", "break", "continue", "return", "var", "let", "const", "this", "get", "set", "class", "extends", "static"];
+    static keywords = ["for", "if", "while", "else", "function", "break", "continue", "return", "var", "let", "const", "this", "get", "set", "class", "extends", "static", "true", "false"];
     static global = ["$", "console", "window"];
 
     #shadow;

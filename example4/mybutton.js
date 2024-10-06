@@ -40,7 +40,7 @@ class MyButton extends HTMLElement
             mybutton.#attachElements();
          });
 
-        observer.observe(this, {attributes: true, childList: true, characterData: false, subtree: true});
+        observer.observe(this, {attributes: false, childList: true, characterData: false, subtree: false});
 
         button.classList.add("thicc");
 
