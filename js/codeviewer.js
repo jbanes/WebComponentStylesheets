@@ -52,7 +52,8 @@ class CodeViewer extends HTMLElement
         resultcontent.classList.add("iframe");
         iframe.setAttribute("src", root + "/" + render);
         
-        open.textContent = "Open";
+        // TODO: Not super happy with this innerHTML, but too lazy to splay it out right now
+        open.innerHTML = "Open <svg width=\"16\" height=\"16\"><use xlink:href=\"images/symbols.svg#link\"></use></svg>";
         open.onclick = function() {
             window.open(root + "/" + render, "_blank");
         };
@@ -138,7 +139,9 @@ class CodeViewer extends HTMLElement
         if(!this.childNodes.length) return;
         
         this.childNodes.forEach(function(element) {
-            if(element.nodeName === "STYLE" || element.nodeName === "LINK")
+            var nodeName = element.nodeName.toUpperCase();
+            
+            if(nodeName === "STYLE" || nodeName === "LINK")
             {
                 that.#style = element;
                 that.#shadow.appendChild(element);
