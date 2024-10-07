@@ -417,11 +417,15 @@ this.shadowRoot.innerHTML = "&lt;style> " +
             <p>Even better, we now have a mechanism for allowing users of our 
             components to re-theme them as needed!</p>
         </div>
-<!--        <div>
+        <div>
             <h2>Let's Recap</h2>
             <p>Today we've learned methods for integrating regular CSS stylesheets
-            with our </p>
-            <p></p>
+            by simply moving elements from the parent DOM to the Shadow DOM.</p>
+            <p>We went through all the details to make it happen, and learned
+            how to delay our rendering until the Web Component element is fully
+            loaded.</p>
+            <p>To make it even easier, you can replicate this by using the following
+            template to start your project:</p>
             <code-highlight type="javascript" start="25">
                 <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
                 <code>class WebComponentTemplate extends HTMLElement 
@@ -469,13 +473,69 @@ this.shadowRoot.innerHTML = "&lt;style> " +
 
 customElements.define("YOUR-TAG-NAME", WebComponentTemplate);</code>
             </code-highlight>
-            <p></p>
-            <p></p>
-            <p></p>
         </div>
         <div>
             <h2>One More Thing...</h2>
-            <p>Emirgance</p>
-        </div>-->
+            <p>In writing this article, I literally created two Web Components
+            <code>&lt;code-viewer&gt;</code> and <code>&lt;code-highlighter&gt;</code>
+            using this technology in order to provide the code in an easy to
+            view form.</p>
+            <p>In doing so, I learned just how easy Web Components can be. Here is
+            the literal code for Example 5 above:</p>
+            <code-highlight type="HTML">
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <code>&lt;code-viewer&gt;
+    &lt;link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+    &lt;files root="example5" render="index.html">
+        &lt;file>index.html</file>
+        &lt;file>mybutton.js</file>
+        &lt;file>mybutton.css</file>
+    &lt;/files>
+&lt;/code-viewer></code>
+            </code-highlight>
+            <p>It's very clear that if we can design good components, the future
+            will be Web Components. It's just been very difficult to do.</p>
+            <p>Until now.</p>
+            <p>I'm attempting to lead the charge by creating the 
+            <a href="https://github.com/InvirganceOpenSource/emirgance">Emirgance</a> 
+            library for Web Components. While it will
+            eventually provide a large number of quality components for composing
+            applicaitons, for now it provides a better base for building them.</p>
+            <p>Here is how much simpler a custom button is in Emirgance:</p>
+            <code-highlight type="javascript">
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <code>class MyButton extends EmirganceBaseElement
+{
+    constructor()
+    {
+        super();
+    }
+
+    emirganceInit()
+    {
+        var button = document.createElement("button");
+
+        button.textContent = this.getAttribute("text");
+
+        this.shadowRoot.appendChild(button);
+    }
+}
+
+customElements.define("my-button", MyButton);</code>
+            </code-highlight>
+            <p>All the complexity we just went through is already handled for you.
+            Stylesheets are automatically pulled in, the Shadow DOM is created
+            for you, and <code>emirganceInit()</code> is called <i>after</i> the 
+            element has been fully parsed.</p>
+            <p>Meanwhile, the HTML stays the same:</p>
+            <code-highlight type="HTML">
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <code>&lt;my-button text="Click me!">
+    &lt;link href="mybutton.css" rel="stylesheet" type="text/css">
+&lt;/my-button></code>
+            </code-highlight>
+            <p><a href="https://github.com/InvirganceOpenSource/emirgance">Check it out</a>
+            if you found this article useful!</p>
+        </div>
     </body>
 </html>
