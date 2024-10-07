@@ -14,7 +14,7 @@
                 width: 80%;
             }
             
-            h1 { font: bold 250% sans-serif; padding: 10px 10px; margin: 2rem auto 3.5rem; background: #F0F0F0; border-radius: 10px; text-align: center; }
+            h1 { font: bold 250% sans-serif; padding: 15px 10px; margin: 2rem auto 3.5rem; background: #F0F0F0; border-radius: 10px; text-align: center; }
             h2 { font-size: 2em; margin-top: 2rem; }
             h3 { font-size: 1.5em; }
 
@@ -54,6 +54,27 @@
                 max-height:100%;
             }
             
+            .subtitle {
+                border-top: 1px solid #CCC;
+                border-bottom: 1px solid #CCC;
+                display: flex;
+                font-size: 80%;
+                font-style: italic;
+                margin: -3rem 1rem 2rem 1rem;
+                padding: 0.5rem;
+            }
+            
+            .subtitle > div {
+                flex-grow: 1;
+            }
+            
+            .footer {
+                text-align: right; 
+                font-style: italic; 
+                font-size: 80%;
+                margin-bottom: 1rem;
+            }
+            
             @media only screen and (orientation: portrait) {
                 body {
                     width: 94%;
@@ -70,16 +91,22 @@
         </style>
     </head>
     <body>
-        <h1>Making Web Components Fun</h1>
+        <h1>Making Web Components Fun Again</h1>
+        <div class="subtitle">
+            <div>by Jerason Banes</div>
+            <div style="text-align: right;">October 7, 2024</div>
+        </div>
         <div>
             <p>Web Components are the latest breakthrough in web development. 
             Developers can create reusable custom elements using standard 
             Javascript and HTML. Sophisticated web applications can then 
             be built out of straightforward and concise HTML documents.</p>
             <p>If successful, Web Components could finally close the gap
-            between writing highly dynamic Javascript and HTML as a 
+            between writing highly dynamic Javascript, and HTML as a 
             static document.</p>
             <p>There's just one problem: <b>Styling</b></p>
+            <p>Applying CSS styles to Web Components is a pain and a half. Enough
+            to make many swear off the technology altogether.</p>
             <p>In this article we're going to solve that problem. Fully and completely.</p>
         </div>
         <div>
@@ -87,7 +114,7 @@
             <p>Web Components typically use a Shadow DOM to encapsulate all of
             the HTML they generate. The Shadow DOM behaves a bit like an 
             <code>iframe</code>, with an entire hierarchy of elements completely
-            separated from the main page. The only real difference is that an
+            separated from the main page. The key difference is that an
             <code>iframe</code> constrains the rendering to a scrollable area
             while Web Components are embedded in the layout of the parent page.</p>
             <p>One feature that the Shadow DOM shares with <code>iframe</code> is
@@ -95,11 +122,11 @@
             <p>On the surface this sounds great! The component is completely 
             separated with no chance of user stying mucking up your carefully
             designed component. Except... Web Components are just Javascript 
-            classes. How the heck are <i>you</i> supposed to style it?</p>
+            classes. How the heck <i>are you</i> supposed to style it?</p>
         </div>
         <div>
             <h2>Styling Web Components</h2>
-            <p>When we look at most Web Components, we see typically code like this:</p>
+            <p>When we look at Web Components, we typically see code like this:</p>
             <code-highlight type="javascript">
                 <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
                 <code>this.attachShadow({mode: 'open'});
@@ -113,12 +140,12 @@ this.shadowRoot.innerHTML = "&lt;style> " +
                             "&lt;/style>" +
                             "&lt;button>Sup?&lt;/button>";</code>
             </code-highlight>
-            <p>This code works, but has a few key problems. For one, this is 
+            <p>This code works but has a few key problems. For one, this is 
             rather painful to develop. Who wants to be hacking at a string inside
             their Javascript with no LSP support?</p>
             <p>Perhaps more glaringly, what happens when you want to change the
             theme of the component in the wild? Pretty much every component technology
-            going all the back to jQuery UI provided theming!</p>
+            going all the back to jQuery UI has provided theming!</p>
         </div>
         <div class="image3">
             <img src="images/themerollergreen.png" alt="Green theme">
@@ -137,19 +164,20 @@ this.shadowRoot.innerHTML = "&lt;style> " +
         <div>
             <h2>But What if I Want Stylesheets?</h2>
             <p>There's a great <a href="https://css-tricks.com/styling-a-web-component/">article</a>
-            over on CSS Tricks that discusses the various workarounds. Some of 
-            them are quite decent (e.g. using global CSS variables), but none
-            of them really get us to what we want: The ability to inject inline
-            styles in our HTML and/or link to an external stylesheet of our
+            over on CSS Tricks that discusses the various workarounds to the 
+            stylesheet problem. Some of 
+            the solutions are decent. e.g. Using global CSS variables. But none
+            of them really get us what we want: The ability to inject inline
+            styles in our HTML. And/or link to an external stylesheet of our
             choosing.</p>
-            <p>To accomplish that, we're going to have to get a bit clever.</p>
+            <p>To accomplish that, we're going to have to get a bit <i>clever</i>.</p>
+        </div>
+        <div>
+            <h2>Understanding our Goals</h2>
             <p>For the rest of this article, I'm going to show you how to link
             arbitrary styling information into Web Components. <i>Without</i> 
             causing <a href="https://en.wikipedia.org/wiki/Flash_of_unstyled_content">Flashes
             of Unstyled Content</a> (FOUC).</p>
-        </div>
-        <div>
-            <h2>Understanding our Goals</h2>
             <p>To see how it's done we're going to create a very simple Web 
             Component that places a styled button on the screen. And then we're 
             going to see how to link our stylesheet into it.</p>
@@ -169,12 +197,12 @@ this.shadowRoot.innerHTML = "&lt;style> " +
         <div>
             <p>As you can see, we have a large blue button on top of a white
             field, with an antique white background behind that. If there is 
-            any delay in the style being applied, the button will appear to
-            flash during rendering as the button recolors to blue and the
-            white area is expanded to accomodate the larger button size.</p>
+            any delay in the style being applied the button will appear to
+            flash during rendering. This is due to the button recoloring to blue and the
+            white area expanding to accomodate the larger button size.</p>
             <p>You can click the "Open" button to view the page directly. Try
             refreshing the page a few times to see if there is any flashing.
-            Since our style is defined prior to the button's definition, you
+            Since our style is defined prior to the button's definition you
             should see a completely stable interface with no flashes during
             refreshes.</p>
             <p>Now let's embed our button into a Web Component:</p>
@@ -260,7 +288,7 @@ this.shadowRoot.innerHTML = "&lt;style> " +
             <p>In my testing, this will work in Chrome without a Flash of Unstyled
             Content. Chrome will complete the load of the script before it attempts
             to render to the screen.</p>
-            <p>However, other browser are not so generous. If you click the Open
+            <p>However, other browsers are not so generous. If you click the Open
             button in Safari and hit Refresh a times, you're going to notice a 
             small flash. It's not bad and can be worked around in the parent
             document, but we can do better.</p>
@@ -271,7 +299,7 @@ this.shadowRoot.innerHTML = "&lt;style> " +
             <p>Before we dive any deeper, I want to answer a question some of 
             you might have at this point. If you've studied Web Components at
             all, you might be wondering why we can't just use a <code>&lt;slot&gt;</code>
-            to pull int the <code>&lt;style&gt;</code> tag?</p>
+            to pull in the <code>&lt;style&gt;</code> tag?</p>
             <p>And that's actually a really good question! For those who are 
             unfamiliar, a Web Component can have a tag like this:</p>
             <code-highlight type="javascript">
@@ -296,7 +324,7 @@ this.shadowRoot.innerHTML = "&lt;style> " +
             DOM as if it were positioned in the Shadow DOM.</p>
             <p>The end result is that the content is rendered as part of the
             Shadow DOM, but the content is otherwise unable to interact with the
-            Shadown DOM.</p>
+            Shadow DOM.</p>
             <p>What this means for a slotted <code>&lt;style&gt;</code> tag is
             simple: The <code>&lt;style&gt;</code> tag doesn't render anything. So
             there will be no useful interactions in the chosen slot. We'll have
@@ -354,14 +382,14 @@ this.shadowRoot.innerHTML = "&lt;style> " +
             <p>Ok, we've fully solved styling, right? Not so fast. So far we've
             been working with embedded stylesheets. That's not really ideal, 
             especially if we have multiple uses of the same component. How do
-            we link in an external stylesheet?</p>
+            we link to an external stylesheet?</p>
         </div>
         <div>
             <h2>Linking External Stylesheets</h2>
             <p>So far we've been using embedded stylesheets. This is nice for 
-            a demonstration, but how do we link to an external stylesheet? Importantly,
+            a demonstration, but how do we link to an external stylesheet? More importantly,
             how do we link to an external stylesheet without a Flash of Unstyled
-            content caused by the stylesheet loading after the page loads?</p>
+            Content caused by the stylesheet loading after the page loads?</p>
             <p>The answer is thankfully as simple as our handlng of the <code>&lt;style&gt;</code> 
             tag. If we place a <code>&lt;link&gt;</code> tag in our element and then
             move it to our Shadow DOM, something magical happens.</p>
@@ -410,7 +438,7 @@ this.shadowRoot.innerHTML = "&lt;style> " +
             The browser already takes care of that for you. If you request the
             same stylesheet multiple times, the browser will pull it from cache
             to speed up rendering. The end result is that your stylesheet will
-            only load once, even if multiple Shadow DOMs are using it.</p>
+            only load once. Even if multiple Shadow DOMs are using it.</p>
             <p>And that's it! We now have a method of setting our CSS stylesheet
             independent of our Javascript, allowing for rapid creation of components
             without getting bogged down in the difficulties of embedding styles.</p>
@@ -424,8 +452,8 @@ this.shadowRoot.innerHTML = "&lt;style> " +
             <p>We went through all the details to make it happen, and learned
             how to delay our rendering until the Web Component element is fully
             loaded.</p>
-            <p>To make it even easier, you can replicate this by using the following
-            template to start your project:</p>
+            <p>To make this even easier, you can copy/paste <a href="https://github.com/jbanes/WebComponentStylesheets/blob/main/js/template.js">this
+            template</a> to start your project:</p>
             <code-highlight type="javascript" start="25">
                 <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
                 <code>class WebComponentTemplate extends HTMLElement 
@@ -478,10 +506,10 @@ customElements.define("YOUR-TAG-NAME", WebComponentTemplate);</code>
             <h2>One More Thing...</h2>
             <p>In writing this article, I literally created two Web Components
             <code>&lt;code-viewer&gt;</code> and <code>&lt;code-highlighter&gt;</code>
-            using this technology in order to provide the code in an easy to
-            view form.</p>
+            using this technology in order to embed the code examples into this
+            article.</p>
             <p>In doing so, I learned just how easy Web Components can be. Here is
-            the literal code for Example 5 above:</p>
+            the HTML code for the Example 5 tabbed interface above:</p>
             <code-highlight type="HTML">
                 <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
                 <code>&lt;code-viewer&gt;
@@ -493,14 +521,16 @@ customElements.define("YOUR-TAG-NAME", WebComponentTemplate);</code>
     &lt;/files>
 &lt;/code-viewer></code>
             </code-highlight>
-            <p>It's very clear that if we can design good components, the future
-            will be Web Components. It's just been very difficult to do.</p>
-            <p>Until now.</p>
-            <p>I'm attempting to lead the charge by creating the 
+            <p>I mean, you have to admit. That's kind of cool!</p>
+            <p>It's very clear that if we can design good components the future
+            will be Web Components.</p>
+            <p>It's just been very difficult to do until now.</p>
+            <p>Which is why I have one more surprise!</p>
+            <p>I am attempting to lead the charge for better Web Components by creating the 
             <a href="https://github.com/InvirganceOpenSource/emirgance">Emirgance</a> 
             library for Web Components. While it will
             eventually provide a large number of quality components for composing
-            applicaitons, for now it provides a better base for building them.</p>
+            applications, it currently focuses on a better base for building them.</p>
             <p>Here is how much simpler a custom button is in Emirgance:</p>
             <code-highlight type="javascript">
                 <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
@@ -535,7 +565,11 @@ customElements.define("my-button", MyButton);</code>
 &lt;/my-button></code>
             </code-highlight>
             <p><a href="https://github.com/InvirganceOpenSource/emirgance">Check it out</a>
-            if you found this article useful!</p>
+            for yourself, and start making amazing new Web Components today!</p>
+        </div>
+        <div>
+            <hr>
+            <div class="footer">&copy; Copyright 2024 Invirgance LLC</div>
         </div>
     </body>
 </html>
