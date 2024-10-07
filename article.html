@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <title>Making Web Components Fun to Develop</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="js/codehighlight.js"></script>
+        <script src="js/codeviewer.js"></script>
+        <style>
+            body {
+                font: 14pt Helvetica, Arial, sans-serif;
+                margin: auto;
+                width: 80%;
+            }
+            
+            h1 { font: bold 250% sans-serif; padding: 10px 10px; margin: 2rem auto 3.5rem; background: #F0F0F0; border-radius: 10px; text-align: center; }
+            h2 { font-size: 2em; margin-top: 2rem; }
+            h3 { font-size: 1.5em; }
+
+            a { color: rgb(15, 20, 25); }
+            a:hover { color: rgb(29, 155, 240); }
+
+            hr { margin-top: 4rem; }
+            
+            p { line-height: 150%; }
+            p > code, li > code { background-color: #f0f1f2; padding: 0.2em; font-size: 10pt; line-height: 150%; }
+            ul, ol { line-height: 175%; }
+            ul li, ol li { margin-bottom: 0.3em; }
+        
+            .figure {
+                text-align: center;
+                font-style: italic;
+                margin-top: 4px;
+                margin-bottom: 2em;
+            }
+            
+            .image3 {
+                display: grid;
+                background-color: #F0F0F0;
+                border-radius: 12px;
+                font-style: italic;
+                font-size: 80%;
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 5%;
+                margin: 2rem 0rem;
+                padding: 2rem;
+                text-align: center;
+            }
+            
+            .image3 img { 
+                object-fit: contain;
+                max-width:100%;
+                max-height:100%;
+            }
+            
+            @media only screen and (orientation: portrait) {
+                body {
+                    width: 94%;
+                }
+                
+                h2 { text-align: center; }
+            }
+            
+            @media only screen and (max-height: 600px) {
+                body {
+                    width: 94%;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Making Web Components Fun to Develop</h1>
+        <div>
+            <p>Web Components are the latest breakthrough in web development. 
+            Developers can create reusable custom elements using standard 
+            Javascript and HTML. Sophisticated web applications can then 
+            be built out of straightforward and concise HTML documents.</p>
+            <p>If successful, Web Components could finally close the gap
+            between writing highly dynamic Javascript and HTML as a 
+            static document.</p>
+            <p>There's just one problem: <b>Styling</b></p>
+            <p>In this article we're going to solve that problem. Fully and completely.</p>
+        </div>
+        <div>
+            <h2>The Problem with Stylesheets</h2>
+            <p>Web Components typically use a Shadow DOM to encapsulate all of
+            the HTML they generate. The Shadow DOM behaves a bit like an 
+            <code>iframe</code>, with an entire hierarchy of elements completely
+            separated from the main page. The only real difference is that an
+            <code>iframe</code> constrains the rendering to a scrollable area
+            while Web Components are embedded in the layout of the parent page.</p>
+            <p>One feature that the Shadow DOM shares with <code>iframe</code> is
+            that the styling of the parent page cannot affect the component.</p>
+            <p>On the surface this sounds great! The component is completely 
+            separated with no chance of user stying mucking up your carefully
+            designed component. Except... Web Components are just Javascript 
+            classes. How the heck are <i>you</i> supposed to style it?</p>
+        </div>
+        <div>
+            <h2>Styling Web Components</h2>
+            <p>When we look at most Web Components, we see typically code like this:</p>
+            <code-highlight type="javascript">
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <code>this.attachShadow({mode: 'open'});
+this.shadowRoot.innerHTML = "&lt;style> " +
+                            "button { " +
+                            "    background: #1E88E5; " +
+                            "    color: white; " +
+                            "    padding: 2rem 4rem; " +
+                            "    border: 0; font-size: 1.5rem; " +
+                            "}" +
+                            "&lt;/style>" +
+                            "&lt;button>Sup?&lt;/button>";</code>
+            </code-highlight>
+            <p>This code works, but has a few key problems. For one, this is 
+            rather painful to develop. Who wants to be hacking at a string inside
+            their Javascript with no LSP support?</p>
+            <p>Perhaps more glaringly, what happens when you want to change the
+            theme of the component in the wild? Pretty much every component technology
+            going all the back to jQuery UI provided theming!</p>
+        </div>
+        <div class="image3">
+            <img src="images/themerollergreen.png" alt="Green theme">
+            <img src="images/themerollerblue.png" alt="Blue theme">
+            <img src="images/themerollerorange.png" alt="Orange theme">
+            <div>Green Theme</div>
+            <div>Blue Theme</div>
+            <div>Orange Theme</div>
+        </div>
+        <div>
+            <p>Themes are important in professional work as they carry brand 
+            identity and help integrate the component into the overall UX design
+            of the application. Any component that can't be themed is already
+            dead on arrival.</p>
+        </div>
+        <div>
+            <h2>But What if I Want Stylesheets?</h2>
+            <p>There's a great <a href="https://css-tricks.com/styling-a-web-component/">article</a>
+            over on CSS Tricks that discusses the various workarounds. Some of 
+            them are quite decent (e.g. using global CSS variables), but none
+            of them really get us to what we want: The ability to inject inline
+            styles in our HTML and/or link to an external stylesheet of our
+            choosing.</p>
+            <p>To accomplish that, we're going to have to get a bit clever.</p>
+            <p>For the rest of this article, I'm going to show you how to link
+            arbitrary styling information into Web Components. <i>Without</i> 
+            causing <a href="https://en.wikipedia.org/wiki/Flash_of_unstyled_content">Flashes
+            of Unstyled Content</a> (FOUC).</p>
+        </div>
+        <div>
+            <h2>Understanding our Goals</h2>
+            <p>To see how it's done we're going to create a very simple Web 
+            Component that places a styled button on the screen. And then we're 
+            going to see how to link our stylesheet into it.</p>
+            <p>Let's start by looking at a page with the all the necessary HTML 
+            and CSS fully embedded. That way we can see what results we want to
+            achive.</p>
+        </div>
+        <div>
+            <code-viewer>
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <files root="example1" render="index.html">
+                    <file>index.html</file>
+                </files>
+            </code-viewer>
+        </div>
+        <div class="figure">Example 1: Pure HTML with embedded style</div>
+        <div>
+            <p>As you can see, we have a large blue button on top of a white
+            field, with an antique white background behind that. If there is 
+            any delay in the style being applied, the button will appear to
+            flash during rendering as the button recolors to blue and the
+            white area is expanded to accomodate the larger button size.</p>
+            <p>You can click the "Open" button to view the page directly. Try
+            refreshing the page a few times to see if there is any flashing.
+            Since our style is defined prior to the button's definition, you
+            should see a completely stable interface with no flashes during
+            refreshes.</p>
+            <p>Now let's embed our button into a Web Component:</p>
+        </div>
+        <div>
+            <code-viewer>
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <files root="example2" render="index.html">
+                    <file>index.html</file>
+                    <file>mybutton.js</file>
+                </files>
+            </code-viewer>
+        </div>
+        <div class="figure">Example 2: Web Component with no style</div>
+        <div>
+            <p>As you can see, we have some nice, clean Javascript with no 
+            stringified stylesheets uglifying our code. That's the good news.</p>
+            <p>Bad news is that we've lost all style on our button. You can see
+            that the styles are still there (line 15 of <code>mybutton.js</code>), 
+            but the <code>.thicc</code> style is never getting applied. </p>
+        </div>
+        <div>
+            <h2>Applying a Stylesheet to our Web Component</h2>
+            <p>Take a look at the following code:</p>
+        </div>
+        <div>
+            <code-viewer>
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <files root="example3" render="index.html">
+                    <file>index.html</file>
+                    <file>mybutton.js</file>
+                </files>
+            </code-viewer>
+        </div>
+        <div class="figure">Example 3: Web Component with style element</div>
+        <div>
+            <p>A couple things probably stand out right off the bat.</p>
+            <ol>
+                <li>Our button is once again styled</li>
+                <li>A <code>&lt;style&gt;</code> tag is embedded inside the
+                <code>&lt;my-button&gt;</code> Web Component tag</li>
+                <li>There's still no CSS in the Javascript!</li>
+            </ol>
+            <p>WAIT! Before you run off thinking you understand the solution,
+            it's a bit more complicated than just putting the <code>&lt;style&gt;</code>
+            tag into the Web Component element. All we did was make the style 
+            avaialble to the Web Component. It still won't apply without some
+            additional magic.</p>
+            <p>In fact, we have to be careful here. The <code>&lt;style&gt;</code>
+            tag inside the element can still affect the rest of the page. This
+            can cause a Flash of Unstyled Content until our component has fully
+            consumed it.</p>
+            <p>The real magic is happening on lines 15-20 of the Javascript. Here
+            we are looping through the elements contained within the element in
+            the primary DOM, looking for the <code>&lt;style&gt;</code> element,
+            then moving that element from the primary DOM into the Shadow DOM.</p>
+            <code-highlight type="javascript" start="15">
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <code>        this.childNodes.forEach(function(element) {
+            if(element.nodeName === "STYLE")
+            {
+                shadow.appendChild(element);
+            }
+        });</code>
+            </code-highlight>
+            <p>If you were to inspect the page, you'll find that the <code>&lt;style&gt;</code>
+            element has disappeared from the element itself and now resides at the
+            top of the Shadow DOM. The code then adds the button after the style
+            element is moved.</p>
+            <p>However, we're not done yet. If you try to apply this to your own Web
+            Component, it will likely not work. It's only working here because of 
+            line 7 of the HTML:</p>
+            <code-highlight type="HTML" start="7">
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <code>        &lt;script src="mybutton.js" defer&gt;&lt;/script&gt;</code>
+            </code-highlight>
+            <p>See that <code>defer</code> there? That's telling the browser not 
+            to load the script until the page is done loading. Without this, the
+            element would have no children when <code>connectedCallback()</code>
+            is called by the browser to let us know that our element has been
+            added. Using <code>defer</code> allows us to attach to the element
+            after all of its contents have been attached.</p>
+            <p>In my testing, this will work in Chrome without a Flash of Unstyled
+            Content. Chrome will complete the load of the script before it attempts
+            to render to the screen.</p>
+            <p>However, other browser are not so generous. If you click the Open
+            button in Safari and hit Refresh a times, you're going to notice a 
+            small flash. It's not bad and can be worked around in the parent
+            document, but we can do better.</p>
+            <p>Let's look at how we can more completely solve this issue.</p>
+        </div>
+        <div>
+            <h2>Tangent: Why Not Use Slot for Style?</h2>
+            <p>Before we dive any deeper, I want to answer a question some of 
+            you might have at this point. If you've studied Web Components at
+            all, you might be wondering why we can't just use a <code>&lt;slot&gt;</code>
+            to pull int the <code>&lt;style&gt;</code> tag?</p>
+            <p>And that's actually a really good question! For those who are 
+            unfamiliar, a Web Component can have a tag like this:</p>
+            <code-highlight type="javascript">
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <code>this.shadowRoot.innerHTML = '&lt;button&gt;&lt;slot name="my_slot"&gt;Default Text&lt;/slot&gt;&lt;/button&gt;';</code>
+            </code-highlight>
+            <p>...and then you can "slot" in content like this:</p>
+            <code-highlight type="HTML">
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <code>&lt;my-button&gt;    
+    &lt;span slot="my_slot"&gt;Click Me!&lt;/slot&gt;
+&lt;/my-button&gt;</code>
+            </code-highlight>
+            <p>When this code runs, the <i>Click Me!</i> would be rendered instead of 
+            <i>Default Text</i>. The content we provided literally "slots" into the
+            <code>&lt;slot&gt;</code> tag we provided.</p>
+            <p>The problem is that the slotted content never enters the Shadow
+            DOM. This is a technique known as "Light DOM". The Light DOM entries
+            stay part of the parent DOM and are affected by styling in the parent
+            DOM. What happens is that when the browser goes to render the slot, it
+            looks aside to the slotted content and renders that from the parent
+            DOM as if it were positioned in the Shadow DOM.</p>
+            <p>The end result is that the content is rendered as part of the
+            Shadow DOM, but the content is otherwise unable to interact with the
+            Shadown DOM.</p>
+            <p>What this means for a slotted <code>&lt;style&gt;</code> tag is
+            simple: The <code>&lt;style&gt;</code> tag doesn't render anything. So
+            there will be no useful interactions in the chosen slot. We'll have
+            to look back to moving elements into the Shadow DOM if we want our
+            styling to take effect.</p>
+        </div>
+        <div>
+            <h2>Eliminating Flashes of Unstyled Content</h2>
+            <p>We have a technique for pulling our style into the Shadow DOM. The
+            only problem is that this happens after the page has fully loaded.
+            Ideally, we'd like to be able to render our tag as soon as the tag
+            content is loaded.</p>
+            <p>Thankfully, there is an easy way to accomplish this.</p>
+            <p>We can register a <code>MutationObserver</code> to be notified
+            as soon as the <code>childNodes</code> are avaialble.</p>
+            <p>The code pattern looks like this:</p>
+            <code-highlight type="javascript" start="39">
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <code>        var observer = new MutationObserver(function(mutations) {
+            // Call a function to build your Web Component UI
+         });
+
+        observer.observe(this, {attributes: false, childList: true, characterData: false, subtree: false});</code>
+            </code-highlight>
+            <p>We can easily plop this into our component:</p>
+        </div>
+        <div>
+            <code-viewer>
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <files root="example4" render="index.html">
+                    <file>index.html</file>
+                    <file>mybutton.js</file>
+                </files>
+            </code-viewer>
+        </div>
+        <div class="figure">Example 4: Fix for flash of unstyled content</div>
+        <div>
+            <p>As you can see, we've moved the rendering from <code>connectedCallback()</code>
+            to <code>#attachElements()</code>. The <code>#attachElements()</code> 
+            method is called twice. Once in <code>connectedCallback()</code> in
+            case the Web Component has been invoked late in the page's rendering.</p>
+            <p>The <code>#attachElements()</code> call checks if elements and
+            attributes are available before attempting to render, so it's safe
+            to call before any attributes or elements are attached.</p>
+            <p>The second call is in the <code>MutationObserver</code> which is
+            triggered at the very end of the <code>childNodes</code> load. If the
+            Web Component is loaded at the beginning of the page (e.g. in the
+            <code>&lt;head&gt;</code>), this will trigger as soon as the custom
+            element is fully loaded.</p>
+            <p>Go ahead and click Open, then refresh the page a few times. No
+            flashes!</p>
+            <p>This is because our updates are happening during the initial render
+            of the page. Around the exact time we want the updates to happen: as
+            soon as the HTML parser is done loading our tag.</p>
+            <p>Ok, we've fully solved styling, right? Not so fast. So far we've
+            been working with embedded stylesheets. That's not really ideal, 
+            especially if we have multiple uses of the same component. How do
+            we link in an external stylesheet?</p>
+        </div>
+        <div>
+            <h2>Linking External Stylesheets</h2>
+            <p>So far we've been using embedded stylesheets. This is nice for 
+            a demonstration, but how do we link to an external stylesheet? Importantly,
+            how do we link to an external stylesheet without a Flash of Unstyled
+            content caused by the stylesheet loading after the page loads?</p>
+            <p>The answer is thankfully as simple as our handlng of the <code>&lt;style&gt;</code> 
+            tag. If we place a <code>&lt;link&gt;</code> tag in our element and then
+            move it to our Shadow DOM, something magical happens.</p>
+            <p>When the browser encounters the <code>&lt;link&gt;</code> tag, it
+            immediately loads the stylesheet to prevent unstyled content.</p>
+            <p>Our <code>MutationObserver</code> then triggers at the end of the tag 
+            load. The code moves the <code>&lt;link&gt;</code> tag to the
+            Shadow DOM.</p>
+            <p>Because the <a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLLinkElement">HTMLLinkElement</a> 
+            has already loaded the the stylesheet, no additional load occurs and 
+            the styles are immediately applied to the Shadow DOM.</p>
+            <p>This is exactly what we want.</p>
+        </div>
+        <div>
+            <code-viewer>
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <files root="example5" render="index.html">
+                    <file>index.html</file>
+                    <file>mybutton.js</file>
+                    <file>mybutton.css</file>
+                </files>
+            </code-viewer>
+        </div>
+        <div class="figure">Example 5: External link to stylesheet</div>
+        <div>
+            <p>If you click the "Open" button above and refresh the page a few
+            times, you'll notice that the rendering is solid. No unexpected 
+            flashes.</p>
+            <p>It is possible to click so fast that you cancel the load partway
+            and cause an incomplete page to be briefly shown. This is entirely
+            caused by clicking the refresh button too fast and not something
+            we'll see in normal page loads. If you fully wait for the page to
+            load before hitting refresh, no flashes should be visible.</p>
+            <p>The only change needed was to add "LINK" to line 25
+            of the Javascript:</p>
+            <code-highlight type="javascript" start="25">
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <code>    this.childNodes.forEach(function(element) {
+        if(element.nodeName === "STYLE" || element.nodeName === "LINK")
+        {
+            mybutton.#shadow.appendChild(element);
+        }
+    });</code>
+            </code-highlight>
+            <p>Don't worry about multiple components using the same stylesheet.
+            The browser already takes care of that for you. If you request the
+            same stylesheet multiple times, the browser will pull it from cache
+            to speed up rendering. The end result is that your stylesheet will
+            only load once, even if multiple Shadow DOMs are using it.</p>
+            <p>And that's it! We now have a method of setting our CSS stylesheet
+            independent of our Javascript, allowing for rapid creation of components
+            without getting bogged down in the difficulties of embedding styles.</p>
+            <p>Even better, we now have a mechanism for allowing users of our 
+            components to re-theme them as needed!</p>
+        </div>
+<!--        <div>
+            <h2>Let's Recap</h2>
+            <p>Today we've learned methods for integrating regular CSS stylesheets
+            with our </p>
+            <p></p>
+            <code-highlight type="javascript" start="25">
+                <link href="css/codeviewer.css" rel="stylesheet" type="text/css">
+                <code>class WebComponentTemplate extends HTMLElement 
+{
+    static observedAttributes = ["YOUR", "ATTRIBUTES", "HERE"];
+
+    #shadow;
+
+    constructor() 
+    {
+        super();
+    }
+
+    #attachElements()
+    {
+        var that = this;
+        
+        if(!this.childNodes.length) return;
+        
+        // Pull in STYLE and LINK tags
+        this.childNodes.forEach(function(element) {
+            if(element.nodeName === "STYLE" || element.nodeName === "LINK")
+            {
+                that.#shadow.appendChild(element);
+            }
+        });
+            
+        // Add your rendering code here
+    }
+
+    connectedCallback()
+    {
+        var that = this;
+        var observer = new MutationObserver(function(mutations) {
+            that.#attachElements();
+         });
+
+        observer.observe(this, {attributes: false, childList: true, characterData: false, subtree: false});
+
+        this.#shadow = this.attachShadow({ mode: "open" });
+        
+        this.#attachElements(); // Attempt to load in case we've been invoked late
+    }
+}
+
+customElements.define("YOUR-TAG-NAME", WebComponentTemplate);</code>
+            </code-highlight>
+            <p></p>
+            <p></p>
+            <p></p>
+        </div>
+        <div>
+            <h2>One More Thing...</h2>
+            <p>Emirgance</p>
+        </div>-->
+    </body>
+</html>
