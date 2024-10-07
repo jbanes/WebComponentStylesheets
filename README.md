@@ -1,3 +1,5 @@
+# Web Component Stylesheets
+
 This project demonstrates how to use external stylesheets with Web Components, without the problem of [flashes of unstyled content](https://en.wikipedia.org/wiki/Flash_of_unstyled_content).
 
 [Read the article](https://jbanes.github.io/WebComponentStylesheets/article.html) for a full explanation of what's going on.
